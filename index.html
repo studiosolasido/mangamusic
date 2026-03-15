@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="description" content="MANGA MUSIC — AI Music Generator on Solana. Type a prompt, get a track.">
+<title>MANGA MUSIC — AI Music on Solana</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Noto+Sans+JP:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+/* ── RESET ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+
+/* ── VARIABLES ── */
+:root{
+  --ink:#0a0a0a;
+  --paper:#faf7f0;
+  --panel:#fff;
+  --red:#e8003d;
+  --red2:#ff2d5e;
+  --yellow:#ffe033;
+  --blue:#0057b8;
+  --sol:#9945FF;
+  --border:3px solid #0a0a0a;
+  --shadow:4px 4px 0 #0a0a0a;
+  --shadow-red:4px 4px 0 var(--red);
+  --font-display:'Bangers',cursive;
+  --font-body:'Noto Sans JP',sans-serif;
+  --font-mono:'Share Tech Mono',monospace;
+}
+
+/* ── BASE ── */
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--font-body);
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  position:relative;
+}
+
+/* ── HALFTONE BG ── */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:radial-gradient(circle,#0a0a0a 1px,transparent 1px);
+  background-size:18px 18px;
+  opacity:0.04;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ── SPEED LINES DECORATION ── */
+.speed-lines{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;z-index:0;overflow:hidden;opacity:0.025;
+}
+.speed-lines::before{
+  content:'';
+  position:absolute;top:50%;left:50%;
+  width:300vmax;height:300vmax;
+  background:repeating-conic-gradient(#000 0deg,#000 0.3deg,transparent 0.3deg,transparent 2deg);
+  transform:translate(-50%,-50%);
+}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:200;
+  background:var(--ink);
+  border-bottom:3px solid var(--red);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0.7rem 1rem;
+  gap:0.5rem;
+}
+.logo{
+  font-family:var(--font-display);
+  font-size:1.6rem;
+  letter-spacing:0.08em;
+  line-height:1;
+  color:var(--yellow);
+  text-decoration:none;
+  text-shadow:2px 2px 0 var(--red);
+  white-space:nowrap;
+}
+.logo span{color:var(--red2);font-size:0.75em;}
+
+.nav-right{display:flex;align-items:center;gap:0.6rem;}
+
+.lang-toggle{
+  display:flex;
+  background:transparent;
+  border:2px solid #333;
+  border-radius:4px;
+  overflow:hidden;
+}
+.lang-btn{
+  padding:0.3rem 0.55rem;
+  font-family:var(--font-mono);
+  font-size:0.65rem;
+  font-weight:700;
+  letter-spacing:0.05em;
+  background:transparent;
+  color:#888;
+  border:none;cursor:pointer;
+  transition:background 0.15s,color 0.15s;
+}
+.lang-btn.active{background:var(--red);color:#fff;}
+
+.btn-wallet{
+  background:var(--sol);
+  color:#fff;
+  border:2px solid #7722dd;
+  padding:0.4rem 0.9rem;
+  font-family:var(--font-display);
+  font-size:0.95rem;
+  letter-spacing:0.08em;
+  cursor:pointer;
+  border-radius:3px;
+  box-shadow:2px 2px 0 #4a00aa;
+  transition:transform 0.1s,box-shadow 0.1s;
+  white-space:nowrap;
+}
+.btn-wallet:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 #4a00aa;}
+.btn-wallet:active{transform:translate(1px,1px);box-shadow:1px 1px 0 #4a00aa;}
+
+/* ── ONOMATOPOEIA BURST ── */
+.burst{
+  position:absolute;
+  font-family:var(--font-display);
+  font-size:clamp(3rem,10vw,5.5rem);
+  color:var(--yellow);
+  -webkit-text-stroke:2px var(--ink);
+  text-stroke:2px var(--ink);
+  line-height:1;
+  pointer-events:none;
+  animation:spinBurst 12s linear infinite;
+  opacity:0.18;
+  z-index:1;
+  user-select:none;
+}
+@keyframes spinBurst{0%{transform:rotate(0deg) scale(1)}50%{transform:rotate(180deg) scale(1.05)}100%{transform:rotate(360deg) scale(1)}}
+.burst-1{top:-20px;right:-10px;font-size:clamp(2rem,8vw,4rem);}
+.burst-2{bottom:60px;left:-15px;font-size:clamp(1.5rem,6vw,3rem);animation-direction:reverse;}
+
+/* ── HERO ── */
+.hero{
+  position:relative;
+  padding:2.5rem 1rem 2rem;
+  text-align:center;
+  overflow:hidden;
+  border-bottom:var(--border);
+  background:var(--panel);
+  z-index:1;
+}
+.hero-eyebrow{
+  display:inline-block;
+  background:var(--red);
+  color:#fff;
+  font-family:var(--font-display);
+  font-size:0.85rem;
+  letter-spacing:0.15em;
+  padding:0.2rem 0.8rem;
+  margin-bottom:1.2rem;
+  border:2px solid var(--ink);
+  box-shadow:var(--shadow);
+  animation:fadeUp 0.5s ease both;
+}
+
+.hero h1{
+  font-family:var(--font-display);
+  font-size:clamp(2.6rem,10vw,4.5rem);
+  letter-spacing:0.04em;
+  line-height:1.05;
+  color:var(--ink);
+  margin-bottom:0.5rem;
+  animation:fadeUp 0.5s 0.08s ease both;
+  -webkit-text-stroke:1px var(--ink);
+}
+.hero h1 em{
+  font-style:normal;
+  color:var(--red);
+  display:block;
+  font-size:1.15em;
+  -webkit-text-stroke:2px var(--ink);
+  text-shadow:3px 3px 0 var(--ink);
+}
+
+.hero-sub{
+  font-size:0.82rem;
+  color:#444;
+  line-height:1.8;
+  max-width:320px;
+  margin:0.75rem auto 2rem;
+  font-family:var(--font-mono);
+  animation:fadeUp 0.5s 0.16s ease both;
+  border-left:3px solid var(--yellow);
+  padding-left:0.75rem;
+  text-align:left;
+}
+
+/* ── PANEL FRAME ── */
+.panel{
+  background:var(--panel);
+  border:var(--border);
+  box-shadow:var(--shadow);
+  border-radius:2px;
+  position:relative;
+  z-index:2;
+}
+.panel-label{
+  position:absolute;
+  top:-12px;left:12px;
+  background:var(--yellow);
+  border:2px solid var(--ink);
+  font-family:var(--font-mono);
+  font-size:0.6rem;
+  letter-spacing:0.12em;
+  padding:1px 8px;
+  color:var(--ink);
+  font-weight:700;
+  text-transform:uppercase;
+}
+
+/* ── PROMPT CARD ── */
+.prompt-wrap{
+  max-width:600px;
+  margin:0 auto 1.2rem;
+  padding:0 1rem;
+  animation:fadeUp 0.5s 0.22s ease both;
+}
+.prompt-card{
+  padding:1.4rem 1.2rem 1.2rem;
+  margin-bottom:1rem;
+}
+.prompt-input{
+  width:100%;
+  background:#fffef8;
+  border:2px solid var(--ink);
+  border-radius:2px;
+  padding:0.85rem 0.9rem;
+  color:var(--ink);
+  font-family:var(--font-mono);
+  font-size:0.85rem;
+  outline:none;
+  resize:none;
+  min-height:90px;
+  line-height:1.65;
+  margin-bottom:0.9rem;
+  transition:box-shadow 0.15s;
+  -webkit-appearance:none;
+}
+.prompt-input::placeholder{color:#aaa;}
+.prompt-input:focus{box-shadow:3px 3px 0 var(--red);}
+
+.prompt-footer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:0.6rem;
+  flex-wrap:wrap;
+}
+.sol-badge{
+  display:inline-flex;align-items:center;gap:0.35rem;
+  background:var(--ink);
+  color:var(--yellow);
+  font-family:var(--font-display);
+  font-size:0.85rem;
+  letter-spacing:0.06em;
+  padding:0.3rem 0.7rem;
+  border-radius:2px;
+  white-space:nowrap;
+}
+
+.btn-gen{
+  background:var(--red);
+  color:#fff;
+  border:2px solid var(--ink);
+  border-radius:2px;
+  padding:0.65rem 1.4rem;
+  font-family:var(--font-display);
+  font-size:1.1rem;
+  letter-spacing:0.1em;
+  cursor:pointer;
+  box-shadow:var(--shadow);
+  transition:transform 0.1s,box-shadow 0.1s;
+  display:flex;align-items:center;gap:0.4rem;
+  white-space:nowrap;
+}
+.btn-gen:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink);}
+.btn-gen:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink);}
+.btn-gen:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:var(--shadow);}
+
+/* ── SPEECH BUBBLE RESULT ── */
+.result-wrap{
+  max-width:600px;
+  margin:0 auto 1rem;
+  padding:0 1rem;
+}
+.result-box{
+  display:none;
+  position:relative;
+  margin-top:0.5rem;
+}
+.result-box.show{display:block;animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both;}
+@keyframes popIn{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
+
+.bubble{
+  background:#fff;
+  border:var(--border);
+  box-shadow:var(--shadow);
+  border-radius:4px;
+  padding:1.2rem;
+  position:relative;
+}
+.bubble::after{
+  content:'';
+  position:absolute;
+  bottom:-14px;left:24px;
+  width:0;height:0;
+  border-left:10px solid transparent;
+  border-right:10px solid transparent;
+  border-top:12px solid var(--ink);
+}
+.bubble::before{
+  content:'';
+  position:absolute;
+  bottom:-11px;left:25px;
+  width:0;height:0;
+  border-left:9px solid transparent;
+  border-right:9px solid transparent;
+  border-top:11px solid #fff;
+  z-index:1;
+}
+.b-label{
+  font-family:var(--font-display);
+  font-size:0.9rem;
+  letter-spacing:0.1em;
+  color:var(--red);
+  margin-bottom:0.65rem;
+  display:flex;align-items:center;gap:0.5rem;
+}
+.result-content{
+  font-family:var(--font-mono);
+  font-size:0.78rem;
+  color:var(--ink);
+  line-height:1.9;
+  white-space:pre-wrap;
+}
+
+/* ── WAVEFORM ── */
+.waveform{
+  display:flex;align-items:center;gap:3px;
+  height:22px;margin-top:1rem;
+}
+.waveform.off .bar{animation:none!important;background:#ddd;transform:scaleY(0.3);}
+.bar{
+  width:3px;border-radius:2px;
+  background:var(--red);
+  animation:wave 1s ease-in-out infinite;
+}
+.bar:nth-child(1){height:40%;animation-delay:0s}
+.bar:nth-child(2){height:70%;animation-delay:.1s}
+.bar:nth-child(3){height:55%;animation-delay:.2s}
+.bar:nth-child(4){height:90%;animation-delay:.05s}
+.bar:nth-child(5){height:60%;animation-delay:.15s}
+.bar:nth-child(6){height:100%;animation-delay:.25s}
+.bar:nth-child(7){height:75%;animation-delay:.08s}
+.bar:nth-child(8){height:50%;animation-delay:.18s}
+.bar:nth-child(9){height:85%;animation-delay:.12s}
+.bar:nth-child(10){height:40%;animation-delay:.22s}
+.bar:nth-child(11){height:65%;animation-delay:.03s}
+.bar:nth-child(12){height:45%;animation-delay:.17s}
+@keyframes wave{0%,100%{transform:scaleY(0.45)}50%{transform:scaleY(1)}}
+
+/* ── DOTS ── */
+.dots{display:inline-flex;gap:3px;align-items:center;}
+.dots span{width:5px;height:5px;background:var(--red);border-radius:50%;animation:dot 1.2s ease infinite;}
+.dots span:nth-child(2){animation-delay:.2s}
+.dots span:nth-child(3){animation-delay:.4s}
+@keyframes dot{0%,80%,100%{transform:translateY(0);opacity:.3}40%{transform:translateY(-4px);opacity:1}}
+
+/* ── FEATURES MANGA PANELS ── */
+.features-section{
+  padding:2.5rem 1rem;
+  position:relative;
+  z-index:1;
+  border-top:var(--border);
+  background:var(--paper);
+}
+.sec-header{
+  text-align:center;
+  margin-bottom:1.75rem;
+}
+.sec-title{
+  font-family:var(--font-display);
+  font-size:clamp(1.6rem,6vw,2.5rem);
+  letter-spacing:0.06em;
+  color:var(--ink);
+  -webkit-text-stroke:1px var(--ink);
+}
+.sec-title span{color:var(--red);}
+.sec-sub{font-family:var(--font-mono);font-size:0.68rem;color:#888;margin-top:0.25rem;}
+
+.feat-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0;
+  border:var(--border);
+  max-width:600px;
+  margin:0 auto;
+  background:var(--ink);
+}
+.feat{
+  background:var(--panel);
+  padding:1.4rem 1.1rem;
+  border-right:2px solid var(--ink);
+  border-bottom:2px solid var(--ink);
+  transition:background 0.15s;
+  position:relative;
+  overflow:hidden;
+}
+.feat:nth-child(2n){border-right:none;}
+.feat:nth-last-child(-n+2){border-bottom:none;}
+.feat::before{
+  content:'';
+  position:absolute;top:0;right:0;
+  width:0;height:0;
+  border-style:solid;
+  border-width:0 22px 22px 0;
+  border-color:transparent var(--yellow) transparent transparent;
+}
+.feat-icon{font-size:1.8rem;margin-bottom:0.6rem;display:block;}
+.feat h3{font-family:var(--font-display);font-size:1rem;letter-spacing:0.06em;margin-bottom:0.35rem;color:var(--ink);}
+.feat p{font-size:0.72rem;font-family:var(--font-mono);color:#555;line-height:1.65;}
+
+/* ── HOW IT WORKS ── */
+.how-section{
+  border-top:var(--border);
+  padding:2.5rem 1rem;
+  position:relative;
+  z-index:1;
+  background:var(--ink);
+  color:var(--paper);
+}
+.how-section .sec-title{color:var(--yellow);-webkit-text-stroke:1px var(--yellow);}
+.how-section .sec-title span{color:var(--red2);}
+.how-section .sec-sub{color:#777;}
+
+.steps{display:flex;flex-direction:column;gap:0;max-width:500px;margin:0 auto;}
+.step{
+  display:flex;gap:1rem;align-items:flex-start;
+  position:relative;
+  padding-bottom:2rem;
+}
+.step:not(:last-child)::after{
+  content:'';position:absolute;
+  left:19px;top:42px;
+  width:2px;height:calc(100% - 15px);
+  background:var(--red);
+  border-left:2px dashed var(--red);
+}
+.step-num{
+  width:40px;height:40px;
+  background:var(--red);
+  border:2px solid var(--red2);
+  border-radius:2px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);
+  font-size:1.15rem;
+  color:#fff;
+  flex-shrink:0;z-index:1;
+  box-shadow:2px 2px 0 #800020;
+}
+.step-body h4{
+  font-family:var(--font-display);
+  font-size:1.1rem;
+  letter-spacing:0.06em;
+  color:var(--yellow);
+  margin-bottom:0.3rem;
+  padding-top:0.3rem;
+}
+.step-body p{font-size:0.75rem;font-family:var(--font-mono);color:#aaa;line-height:1.65;}
+
+/* ── CTA ── */
+.cta-section{
+  border-top:var(--border);
+  border-bottom:var(--border);
+  padding:3rem 1rem;
+  text-align:center;
+  background:var(--yellow);
+  position:relative;
+  z-index:1;
+  overflow:hidden;
+}
+.cta-section::before{
+  content:'♪ ♫ ♩ ♬ ♪ ♫ ♩ ♬ ♪ ♫ ♩ ♬';
+  font-size:1.2rem;
+  color:var(--ink);
+  opacity:0.1;
+  position:absolute;
+  top:10px;left:0;right:0;
+  text-align:center;
+  letter-spacing:0.5em;
+  pointer-events:none;
+}
+.cta-section h2{
+  font-family:var(--font-display);
+  font-size:clamp(1.8rem,7vw,3rem);
+  letter-spacing:0.05em;
+  color:var(--ink);
+  margin-bottom:0.6rem;
+  -webkit-text-stroke:1px var(--ink);
+  line-height:1.1;
+}
+.cta-section h2 em{font-style:normal;color:var(--red);}
+.cta-section p{
+  font-family:var(--font-mono);
+  font-size:0.78rem;
+  color:#555;
+  margin-bottom:1.75rem;
+  line-height:1.7;
+}
+.cta-btns{display:flex;flex-direction:column;gap:0.75rem;max-width:280px;margin:0 auto;}
+.btn-primary{
+  background:var(--ink);color:var(--yellow);
+  border:2px solid var(--ink);
+  padding:0.9rem;border-radius:2px;
+  font-family:var(--font-display);
+  font-size:1.1rem;letter-spacing:0.1em;
+  cursor:pointer;
+  box-shadow:4px 4px 0 #4a3a00;
+  transition:transform 0.1s,box-shadow 0.1s;
+  width:100%;
+}
+.btn-primary:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 #4a3a00;}
+.btn-primary:active{transform:translate(2px,2px);box-shadow:2px 2px 0 #4a3a00;}
+.btn-outline{
+  background:transparent;color:var(--ink);
+  border:2px solid var(--ink);
+  padding:0.9rem;border-radius:2px;
+  font-family:var(--font-display);
+  font-size:1.1rem;letter-spacing:0.1em;
+  cursor:pointer;
+  box-shadow:var(--shadow);
+  transition:transform 0.1s,box-shadow 0.1s;
+  width:100%;
+}
+.btn-outline:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink);}
+.btn-outline:active{transform:translate(2px,2px);}
+
+/* ── FOOTER ── */
+footer{
+  background:var(--ink);
+  border-top:3px solid var(--red);
+  padding:1.5rem 1rem;
+  display:flex;flex-direction:column;
+  align-items:center;gap:0.6rem;
+  text-align:center;
+  position:relative;z-index:1;
+}
+footer .logo{font-size:1.1rem;}
+.built-by{
+  font-family:var(--font-mono);
+  font-size:0.65rem;
+  color:#666;
+}
+.built-by a{color:#1d9bf0;text-decoration:none;font-weight:700;}
+.built-by a:hover{text-decoration:underline;}
+.copy{font-family:var(--font-mono);font-size:0.6rem;color:#444;}
+.sol-chain{
+  display:inline-flex;align-items:center;gap:0.35rem;
+  background:rgba(153,69,255,0.15);
+  border:1px solid rgba(153,69,255,0.3);
+  color:#b87aff;
+  font-family:var(--font-mono);
+  font-size:0.63rem;padding:0.25rem 0.65rem;
+  border-radius:100px;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── I18N HIDDEN ── */
+[data-en],[data-ja]{display:inline}
+body.lang-ja [data-en]{display:none}
+body.lang-en [data-ja]{display:none}
+[data-en-block],[data-ja-block]{display:block}
+body.lang-ja [data-en-block]{display:none}
+body.lang-en [data-ja-block]{display:none}
+
+/* ── DESKTOP ── */
+@media(min-width:640px){
+  nav{padding:0.8rem 2rem;}
+  .hero{padding:4rem 2rem 3rem;}
+  .features-section,.how-section{padding:3.5rem 2rem;}
+  .cta-btns{flex-direction:row;max-width:none;justify-content:center;}
+  .btn-primary,.btn-outline{width:auto;padding:0.9rem 2rem;}
+  footer{flex-direction:row;justify-content:space-between;padding:1.5rem 2rem;text-align:left;}
+}
+@media(min-width:900px){
+  .hero{max-width:800px;margin:0 auto;}
+  .prompt-wrap,.result-wrap{padding:0 2rem;max-width:660px;margin-left:auto;margin-right:auto;}
+  .feat-grid{grid-template-columns:repeat(4,1fr);}
+  .feat:nth-child(2n){border-right:2px solid var(--ink);}
+  .feat:nth-child(4n){border-right:none;}
+  .feat:nth-last-child(-n+4){border-bottom:none;}
+  .feat:nth-last-child(-n+2){border-bottom:2px solid var(--ink);}
+  footer{padding:1.5rem 3rem;}
+}
+</style>
+</head>
+<body class="lang-en">
+
+<div class="speed-lines"></div>
+
+<!-- NAV -->
+<nav>
+  <a class="logo" href="#">MANGA<span>MUSIC</span></a>
+  <div class="nav-right">
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" id="btnJA" onclick="setLang('ja')">日本語</button>
+    </div>
+    <button class="btn-wallet" onclick="alert('Wallet connect — Coming soon!')">
+      ◎ <span data-en>Connect</span><span data-ja>接続</span>
+    </button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="burst burst-1">BOOM!</div>
+  <div class="burst burst-2">ZAP!</div>
+
+  <div class="hero-eyebrow">
+    <span data-en>★ BETA · LIVE ON SOLANA DEVNET ★</span>
+    <span data-ja>★ ベータ版 · ソラナ稼働中 ★</span>
+  </div>
+
+  <h1>
+    <span data-en>Type a prompt,<br>get <em>MUSIC.</em></span>
+    <span data-ja>プロンプトを入力して<br><em>音楽</em>を作ろう！</span>
+  </h1>
+
+  <p class="hero-sub">
+    <span data-en>The first AI music generator on Solana. Describe your vibe — AI composes it. Pay with SOL.</span>
+    <span data-ja>ソラナ初のAI音楽ジェネレーター。バイブスを書いて、AIが作曲。SOLで支払い。</span>
+  </p>
+
+  <!-- PROMPT CARD -->
+  <div class="prompt-wrap">
+    <div class="panel prompt-card">
+      <div class="panel-label">
+        <span data-en>✦ YOUR PROMPT</span>
+        <span data-ja>✦ プロンプト</span>
+      </div>
+      <textarea
+        class="prompt-input"
+        id="promptInput"
+        rows="3"
+        placeholder=""
+        id="promptInput"
+      ></textarea>
+      <div class="prompt-footer">
+        <span class="sol-badge">◎ 0.01 SOL</span>
+        <button class="btn-gen" id="genBtn" onclick="generateMusic()">
+          <span id="btnIcon">▶</span>
+          <span id="btnText" data-en>GENERATE!</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT BUBBLE -->
+  <div class="result-wrap">
+    <div class="result-box" id="resultBox">
+      <div class="bubble panel">
+        <div class="panel-label" id="resultLabel">
+          <span data-en>♪ TRACK RESULT</span>
+          <span data-ja>♪ 楽曲結果</span>
+        </div>
+        <div class="b-label" id="bLabel">
+          <span class="dots"><span></span><span></span><span></span></span>
+          <span data-en>AI is composing...</span>
+          <span data-ja>AI作曲中...</span>
+        </div>
+        <div class="result-content" id="resultContent"></div>
+        <div class="waveform off" id="waveform">
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features-section">
+  <div class="sec-header">
+    <div class="sec-title">
+      <span data-en>WHY <span>MANGA MUSIC</span>?</span>
+      <span data-ja>なぜ <span>MANGA MUSIC</span>?</span>
+    </div>
+    <div class="sec-sub" data-en>Four reasons. No filler.</div>
+    <div class="sec-sub" data-ja>4つの理由。余計なものなし。</div>
+  </div>
+  <div class="feat-grid">
+    <div class="feat">
+      <span class="feat-icon">🎵</span>
+      <h3 data-en>AI COMPOSER</h3>
+      <h3 data-ja>AI作曲家</h3>
+      <p data-en>State-of-the-art generative model creates music from any text description.</p>
+      <p data-ja>最先端の生成モデルがテキストから音楽を制作。</p>
+    </div>
+    <div class="feat">
+      <span class="feat-icon">⚡</span>
+      <h3 data-en>INSTANT</h3>
+      <h3 data-ja>爆速</h3>
+      <p data-en>Solana transactions confirm in under 1 second. Near-zero fees.</p>
+      <p data-ja>ソラナは1秒以内に確認。手数料ほぼゼロ。</p>
+    </div>
+    <div class="feat">
+      <span class="feat-icon">🔑</span>
+      <h3 data-en>YOU OWN IT</h3>
+      <h3 data-ja>完全所有</h3>
+      <p data-en>Every track mints as an NFT to your wallet. Full IP rights.</p>
+      <p data-ja>全楽曲がNFTとしてウォレットへ。完全な権利。</p>
+    </div>
+    <div class="feat">
+      <span class="feat-icon">💰</span>
+      <h3 data-en>EARN ROYALTIES</h3>
+      <h3 data-ja>ロイヤリティ</h3>
+      <p data-en>Automatic on-chain royalties every time your track is played or sold.</p>
+      <p data-ja>再生・売却のたびに自動でロイヤリティ獲得。</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section">
+  <div class="sec-header">
+    <div class="sec-title">
+      <span data-en>HOW IT <span>WORKS</span></span>
+      <span data-ja>使い方</span>
+    </div>
+    <div class="sec-sub" data-en>Simple as reading a manga panel.</div>
+    <div class="sec-sub" data-ja>マンガを読むように簡単。</div>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h4 data-en>CONNECT WALLET</h4>
+        <h4 data-ja>ウォレット接続</h4>
+        <p data-en>Link your Phantom or Solflare wallet to Manga Music.</p>
+        <p data-ja>PhantomまたはSolflareをManga Musicに接続。</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h4 data-en>DESCRIBE YOUR VIBE</h4>
+        <h4 data-ja>バイブスを入力</h4>
+        <p data-en>Type any music description in English or Japanese. Be as creative as you want.</p>
+        <p data-ja>英語か日本語で音楽を説明。自由に表現してOK。</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h4 data-en>PAY 0.01 SOL</h4>
+        <h4 data-ja>0.01 SOLを支払う</h4>
+        <p data-en>Approve the micro-transaction in your wallet. AI starts composing instantly.</p>
+        <p data-ja>ウォレットで少額承認。AIがすぐに作曲開始。</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-body">
+        <h4 data-en>GET YOUR TRACK</h4>
+        <h4 data-ja>楽曲を受け取る</h4>
+        <p data-en>Download your song or mint it as an NFT — seconds, not days.</p>
+        <p data-ja>楽曲をダウンロードするかNFTとしてミント。数秒で完了。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2 data-en>START CREATING<br><em>MUSIC</em> NOW!</h2>
+  <h2 data-ja>今すぐ<br><em>音楽</em>を作ろう！</h2>
+  <p data-en>Join 1,200+ creators who generated over 8,000 tracks on Solana.</p>
+  <p data-ja>ソラナで8,000曲以上を生成した1,200人のクリエイターに参加。</p>
+  <div class="cta-btns">
+    <button class="btn-primary" onclick="window.scrollTo({top:0,behavior:'smooth'});setTimeout(()=>document.getElementById('promptInput').focus(),400)">
+      <span data-en>▶ TRY FOR FREE</span>
+      <span data-ja>▶ 無料で試す</span>
+    </button>
+    <button class="btn-outline" onclick="alert('Docs coming soon!')">
+      <span data-en>READ DOCS →</span>
+      <span data-ja>ドキュメント →</span>
+    </button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a class="logo" href="#">MANGA<span style="color:var(--red2);font-size:0.75em;">MUSIC</span></a>
+  <div class="built-by">
+    built by <a href="https://twitter.com/solasidofun" target="_blank" rel="noopener">@solasidofun</a>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:0.35rem;">
+    <span class="sol-chain">◎ Powered by Solana</span>
+    <span class="copy">© 2025 Manga Music · All Rights Reserved</span>
+  </div>
+</footer>
+
+<script>
+/* ── LANGUAGE TOGGLE ── */
+function setLang(lang) {
+  document.body.className = 'lang-' + lang;
+  document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+  document.getElementById('btnJA').classList.toggle('active', lang === 'ja');
+  // Update placeholder
+  const input = document.getElementById('promptInput');
+  if (lang === 'en') {
+    input.placeholder = 'e.g. lofi hip-hop in a rainy café, sad beats, 90s vibes...';
+  } else {
+    input.placeholder = '例：雨の日のカフェでのローファイ、悲しいビート、90年代の雰囲気...';
+  }
+  // Update generate button text
+  const btnText = document.getElementById('btnText');
+  btnText.textContent = lang === 'en' ? 'GENERATE!' : '生成！';
+}
+
+// Set initial placeholder
+setLang('en');
+
+/* ── AI GENERATE ── */
+async function generateMusic() {
+  const prompt = document.getElementById('promptInput').value.trim();
+  if (!prompt) { document.getElementById('promptInput').focus(); return; }
+
+  const isJA = document.body.classList.contains('lang-ja');
+  const btn = document.getElementById('genBtn');
+  const btnIcon = document.getElementById('btnIcon');
+  const btnText = document.getElementById('btnText');
+  const resultBox = document.getElementById('resultBox');
+  const resultContent = document.getElementById('resultContent');
+  const bLabel = document.getElementById('bLabel');
+  const waveform = document.getElementById('waveform');
+
+  // Loading
+  btn.disabled = true;
+  btnIcon.innerHTML = '<span class="dots"><span></span><span></span><span></span></span>';
+  btnText.textContent = isJA ? '生成中...' : 'GENERATING...';
+  resultBox.classList.add('show');
+  bLabel.innerHTML = `<span class="dots"><span></span><span></span><span></span></span>&nbsp;${isJA ? 'AI作曲中...' : 'AI is composing...'}`;
+  resultContent.textContent = '';
+  waveform.classList.add('off');
+
+  const sysPrompt = isJA
+    ? `あなたはManga MusicというソラナブロックチェーンのAI音楽作曲家です。
+ユーザーのプロンプトから、以下のフォーマットで創造的な楽曲説明を生成してください：
+
+🎵 タイトル: [クリエイティブな曲名]
+🎸 ジャンル: [メインジャンル]
+🎹 BPM: [数値]
+🎨 ムード: [雰囲気・感情]
+🎧 楽器: [使用楽器リスト]
+📝 構成: [イントロ → Aメロ → サビ → アウトロ]
+✨ サウンドデザイン: [独特なサウンドの詳細な説明]
+
+日本語で、情熱的でクリエイティブに。最大180語。`
+    : `You are an AI music composer for Manga Music, an AI music platform on the Solana blockchain.
+When a user gives you a prompt, generate a creative track description in this format:
+
+🎵 TITLE: [creative song title]
+🎸 GENRE: [main genre]
+🎹 BPM: [number]
+🎨 MOOD: [mood / feeling]
+🎧 INSTRUMENTS: [instrument list]
+📝 STRUCTURE: [Intro → Verse → Chorus → Bridge → Outro]
+✨ SOUND DESIGN: [unique sonic details and texture]
+
+Write in English, be expressive and creative. Max 180 words.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: sysPrompt,
+        messages: [{ role: 'user', content: `Generate a track from this prompt: "${prompt}"` }]
+      })
+    });
+
+    const data = await res.json();
+    const text = data.content?.[0]?.text || (isJA ? '生成失敗。もう一度お試しください。' : 'Generation failed. Please try again.');
+
+    bLabel.textContent = isJA ? '✦ 楽曲完成！' : '✦ TRACK GENERATED!';
+    waveform.classList.remove('off');
+    resultContent.textContent = '';
+
+    let i = 0;
+    const timer = setInterval(() => {
+      if (i < text.length) { resultContent.textContent += text[i++]; }
+      else clearInterval(timer);
+    }, 14);
+
+  } catch (err) {
+    bLabel.textContent = '⚠ ERROR';
+    resultContent.textContent = isJA ? '接続エラー。もう一度お試しください。' : 'Connection error. Please try again.';
+    waveform.classList.add('off');
+  } finally {
+    btn.disabled = false;
+    btnIcon.textContent = '▶';
+    btnText.textContent = isJA ? '生成！' : 'GENERATE!';
+  }
+}
+
+// Ctrl+Enter shortcut
+document.getElementById('promptInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) generateMusic();
+});
+</script>
+</body>
+</html>
