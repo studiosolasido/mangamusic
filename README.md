@@ -8,7 +8,7 @@
 
 [![Solana](https://img.shields.io/badge/Blockchain-Solana-9945FF?style=for-the-badge&logo=solana&logoColor=white)](https://solana.com)
 [![License](https://img.shields.io/badge/License-MIT-e8003d?style=for-the-badge)](LICENSE)
-[![Built by](https://img.shields.io/badge/Built%20by-@solasidofun-1d9bf0?style=for-the-badge&logo=x&logoColor=white)](https://twitter.com/solasidofun)
+[![Built by](https://img.shields.io/badge/Built%20by-@0xsixtina-1d9bf0?style=for-the-badge&logo=x&logoColor=white)](https://x.com/0xsixtina)
 [![Status](https://img.shields.io/badge/Status-Beta-ffe033?style=for-the-badge&logoColor=black)](https://mangamusic.xyz)
 [![Hugging Face](https://img.shields.io/badge/Demo-Hugging%20Face-ff9d00?style=for-the-badge&logo=huggingface&logoColor=white)](https://huggingface.co)
 
@@ -19,7 +19,7 @@
 
 <br/>
 
-[🚀 Live Demo](https://mangamusic.xyz) · [📖 Docs](#documentation) · [🐦 Twitter](https://twitter.com/solasidofun) · [💬 Discord](#community) · [🗺️ Roadmap](#roadmap)
+[🚀 Live Demo](https://mangamusic.xyz) · [📖 Docs](#documentation) · [🐦 Twitter](https://x.com/0xsixtina) · [💬 Discord](#community) · [🗺️ Roadmap](#roadmap)
 
 </div>
 
@@ -153,7 +153,6 @@ User owns:   NFT on Solana — royalties, resale rights, forever
 | **Anchor Framework** | Smart contract development |
 | **Metaplex** | NFT minting standard |
 | **Phantom / Solflare SDK** | Wallet connectivity |
-| **Orynth DEX** | Phase 1 token listing |
 
 ### Backend *(Phase 2)*
 | Technology | Purpose |
@@ -181,7 +180,7 @@ npm >= 9.0.0
 
 ```bash
 # Clone the repository
-git clone https://github.com/solasidofun/manga-music.git
+git clone https://github.com/0xsixtina/manga-music.git
 cd manga-music
 
 # Open the landing page directly — no build required
@@ -195,7 +194,7 @@ npx serve .
 
 ```bash
 # Clone the repo
-git clone https://github.com/solasidofun/manga-music.git
+git clone https://github.com/0xsixtina/manga-music.git
 cd manga-music
 
 # Install dependencies
@@ -320,9 +319,8 @@ manga-music/
 
 </div>
 
-### Phase 1 — Listing on Orynth `Q3 2025`
+### Phase 1 — Token Launch `Q3 2025`
 - [ ] Token Generation Event (TGE)
-- [ ] Initial listing on **Orynth DEX**
 - [ ] Liquidity pool setup & lock
 - [ ] Community airdrop campaign
 - [ ] Whitepaper v1.0 release
@@ -384,7 +382,6 @@ manga-music/
 | MANGA MUSIC Token | Devnet | `Coming in Phase 1` |
 | NFT Minting Program | Devnet | `Coming in Phase 2` |
 | Royalty Distributor | Devnet | `Coming in Phase 2` |
-| Liquidity Pool | Orynth DEX | `Coming in Phase 1` |
 
 ### Contract Overview
 
@@ -528,7 +525,7 @@ git push origin feature/your-feature-name
 
 ### Good First Issues
 
-Look for issues tagged with `good first issue` or `help wanted` in the [Issues tab](https://github.com/solasidofun/manga-music/issues).
+Look for issues tagged with `good first issue` or `help wanted` in the [Issues tab](https://github.com/0xsixtina/manga-music/issues).
 
 ---
 
@@ -540,7 +537,7 @@ Look for issues tagged with `good first issue` or `help wanted` in the [Issues t
 
 Instead, please report security issues via:
 - **Email:** security@mangamusic.xyz
-- **Twitter DM:** [@solasidofun](https://twitter.com/solasidofun)
+- **Twitter DM:** [@0xsixtina](https://x.com/0xsixtina)
 
 We aim to respond within **48 hours** and will credit responsible disclosures.
 
@@ -570,7 +567,7 @@ A formal bug bounty program will launch in Phase 3 after the security audit. Rew
 
 | Platform | Link | Purpose |
 |---|---|---|
-| 🐦 Twitter / X | [@solasidofun](https://twitter.com/solasidofun) | News & announcements |
+| 🐦 Twitter / X | [@0xsixtina](https://x.com/0xsixtina) | News & announcements |
 | 💬 Discord | Coming soon | Community & support |
 | 📱 Telegram | Coming soon | Quick updates |
 | 🌐 Website | [mangamusic.xyz](https://mangamusic.xyz) | Main platform |
@@ -580,7 +577,7 @@ A formal bug bounty program will launch in Phase 3 after the security audit. Rew
 
 ### Stay Updated
 
-Follow [@solasidofun](https://twitter.com/solasidofun) on X for:
+Follow [@0xsixtina](https://x.com/0xsixtina) on X for:
 - 🚀 Phase announcements
 - 🎁 Airdrop eligibility updates
 - 🎵 New feature demos
@@ -602,7 +599,7 @@ All brand assets are available in the `/assets` directory:
 | Roadmap | `manga_music_roadmap.png` | 1200×1800 | Roadmap sharing |
 | Promo 01–10 | `promo_0X_*.png` | 1080×1080 | Campaign posts |
 
-> ✅ Brand assets may be used for community promotion with credit to **@solasidofun**.
+> ✅ Brand assets may be used for community promotion with credit to **@0xsixtina**.
 > ❌ Do not alter the logo or use assets to misrepresent the project.
 
 ---
@@ -611,10 +608,10 @@ All brand assets are available in the `/assets` directory:
 
 <div align="center">
 
-![GitHub Stars](https://img.shields.io/github/stars/solasidofun/manga-music?style=social)
-![GitHub Forks](https://img.shields.io/github/forks/solasidofun/manga-music?style=social)
-![GitHub Issues](https://img.shields.io/github/issues/solasidofun/manga-music)
-![GitHub PRs](https://img.shields.io/github/issues-pr/solasidofun/manga-music)
+![GitHub Stars](https://img.shields.io/github/stars/0xsixtina/manga-music?style=social)
+![GitHub Forks](https://img.shields.io/github/forks/0xsixtina/manga-music?style=social)
+![GitHub Issues](https://img.shields.io/github/issues/0xsixtina/manga-music)
+![GitHub PRs](https://img.shields.io/github/issues-pr/0xsixtina/manga-music)
 
 </div>
 
@@ -637,7 +634,7 @@ All brand assets are available in the `/assets` directory:
 ```
 MIT License
 
-Copyright (c) 2025 MANGA MUSIC / @solasidofun
+Copyright (c) 2025 MANGA MUSIC / @0xsixtina
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -669,7 +666,7 @@ See [LICENSE](LICENSE) for full text.
 
 <div align="center">
 
-**Built with ❤️ and manga energy by [@solasidofun](https://twitter.com/solasidofun)**
+**Built with ❤️ and manga energy by [@0xsixtina](https://x.com/0xsixtina)**
 
 <br/>
 
